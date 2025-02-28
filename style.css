@@ -1,0 +1,61 @@
+/* Reset default margins and padding */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Ensure HTML and body take full viewport height */
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Prevent scrolling */
+  }
+  
+  /* Container for the canvas */
+  #canvas-container {
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000; /* Black background for consistency */
+  }
+  
+  /* Style the canvas itself */
+  canvas {
+    display: block; /* Remove default inline spacing */
+    max-width: 100%; /* Ensure it doesn’t exceed container width */
+    max-height: 100%; /* Ensure it doesn’t exceed container height */
+    width: auto; /* Allow natural scaling */
+    height: auto; /* Allow natural scaling */
+  }
+  
+  /* Media queries for specific adjustments */
+  @media (max-width: 768px) {
+    /* Adjustments for tablets and smaller devices */
+    #canvas-container {
+      padding: 0; /* Ensure no padding on small screens */
+    }
+    
+    canvas {
+      width: 100vw; /* Force full width on smaller screens */
+      height: 100vh; /* Force full height on smaller screens */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    /* Adjustments for mobile phones */
+    canvas {
+      width: 100vw;
+      height: 100vh;
+    }
+  }
+  
+  /* Ensure touch devices behave well */
+  body {
+    -webkit-touch-callout: none; /* Disable callouts on iOS */
+    -webkit-user-select: none; /* Disable text selection */
+    user-select: none; /* Disable text selection */
+    touch-action: manipulation; /* Improve touch responsiveness */
+  }
