@@ -1,25 +1,26 @@
-const numStars = 800;
+const numStars = 500;
 let stars = [];
-let portalSize; // Will be calculated dynamically
+let portalSize; // Dynamic size
 let scrollYAmount = 0;
 let transitioning = false;
 
 const colors = [
-  [0, 150, 255],   // Blue
-  [255, 200, 0],   // Yellow
-  [255, 100, 0],   // Orange
-  [255, 255, 255]  // White
-];
+    [0, 150, 255],   // Blue
+    [255, 200, 0],   // Yellow
+    [255, 100, 0],   // Orange
+    [255, 255, 255]  // White
+  ];
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  let canvas = createCanvas(windowWidth, windowHeight);
+  canvas.parent('canvas-container'); // Attach to container
   strokeWeight(2);
-  updatePortalSize(); // Set initial portal size
-  resetStars(); // Initialize stars with responsive positions
+  updatePortalSize();
+  resetStars();
 }
 
 function draw() {
-  background(0, 20);
+  background(0, 20); // Slight transparency for trail effect
   const acc = map(mouseX, 0, width, 0.005, 0.2);
 
   stars = stars.filter(star => {
@@ -33,7 +34,7 @@ function draw() {
   }
 
   drawGlowingPortal();
-  if (portalSize > min(width, height) * 0.6 && !transitioning) { // Adjusted threshold
+  if (portalSize > min(width, height) * 0.6 && !transitioning) {
     triggerPageTransition();
   }
 }
@@ -44,7 +45,7 @@ class Star {
     this.prevPos = createVector(x, y);
     this.vel = createVector(0, 0);
     this.ang = atan2(y - height / 2, x - width / 2);
-    this.color = random(colors);
+    this.color = random(colors); // Random color: white or black
   }
 
   isActive() {
@@ -59,13 +60,13 @@ class Star {
     this.pos.add(this.vel);
 
     if (frameCount % 10 === 0) {
-      this.color = random(colors);
+      this.color = random(colors); // Update color periodically
     }
   }
 
   draw() {
     const alpha = map(this.vel.mag(), 0, 3, 100, 255);
-    stroke(this.color[0], this.color[1], this.color[2], alpha);
+    stroke(this.color[0], this.color[1], this.color[2], alpha); // Use white or black
     line(this.pos.x, this.pos.y, this.prevPos.x, this.prevPos.y);
   }
 }
@@ -79,64 +80,55 @@ function drawGlowingPortal() {
   translate(width / 2, height / 2);
   noFill();
 
-  // Pulsing effect scaled to canvas size
-  let pulse = sin(frameCount * 0.03) * min(width, height) * 0.03; // Responsive pulse
-  let baseSize = portalSize + pulse;
+  // Pulsing effect
+  let pulse = sin(frameCount * 0.09) * min(width, height) * 0.05;
+  let baseSize = portalSize + pulse + 15;
 
-  // Inner dark core
-  stroke(20, 20, 20, 255); // Dark gray center
-  strokeWeight(min(width, height) * 0.015); // Responsive thickness
+  // Dark core (tunnel entrance)
+  stroke(20, 20, 20, 255); // Dark gray
+  strokeWeight(max(width, height) * 0.0005);
   ellipse(0, 0, baseSize * 0.4, baseSize * 0.4);
 
-  // Smooth gradient from dark center to light edges
-  for (let i = 0; i < 20; i++) {
-    let gradientFactor = i / 20;
-    let r = lerp(20, 255, gradientFactor);
-    let g = lerp(20, 255, gradientFactor);
-    let b = lerp(20, 0, gradientFactor);
-    let alpha = lerp(255, 30, gradientFactor);
-    let layerSize = baseSize * (0.4 + gradientFactor * 0.7);
-    stroke(r, g, b, alpha);
-    strokeWeight(min(width, height) * 0.02 - i * 0.0008 * min(width, height)); // Responsive gradient thickness
-    ellipse(0, 0, layerSize, layerSize);
-  }
+  // Bright blue exit light at center
+  let lightRadius = baseSize * 0.5;
+  let lightAlpha = map(sin(frameCount * 0.5), -1, 1, 150, 255);
+  stroke(0, 150, 255, lightAlpha); // Bright blue glow
+  strokeWeight(min(width, height) * 0.01);
+  ellipse(0, 0, lightRadius, lightRadius);
 
-  // Swirling vortex
-  for (let i = 0; i < 6; i++) {
-    let swirlAngle = frameCount * 0.15 + i * TWO_PI / 6;
-    let swirlSize = baseSize * (0.7 - i * 0.08);
-    stroke(255, 215, 0, 180 - i * 25);
-    strokeWeight(min(width, height) * 0.003); // Responsive swirl thickness
+  // Swirling vortex with blue wavy lines
+  for (let i = 0; i < 20; i++) {
+    let angle = frameCount * 0.3 + i * TWO_PI / 20; // Slow rotation
+    let dist = map(i, 0, 19, baseSize * 0.4, baseSize * 0.9); // From core to edge
+    let waveOffset = sin(frameCount * 0.05 + i) * 10; // Simple wave
+
+    let alpha = map(i, 0, 19, 200, 50); // Fade outward
+
+    stroke(0, 150, 255, alpha); // Fixed blue color
+    strokeWeight(min(width, height) * 0.09);
     push();
-    rotate(swirlAngle);
-    arc(0, 0, swirlSize, swirlSize, 0, PI / 3);
+    rotate(angle);
+    arc(0, waveOffset, dist, dist, 0, PI / 5); // Quarter-circle arcs for wave effect
     pop();
   }
-
-  // Outer rim with arc-like fading edges
-  let rimAlpha = map(sin(frameCount * 0.05), -1, 1, 50, 100);
-  stroke(255, 255, 0, rimAlpha);
-  strokeWeight(min(width, height) * 0.008); // Responsive rim thickness
-  arc(0, 0, baseSize * 1.1, baseSize * 1.1, PI / 4, (7 * PI) / 4);
 
   pop();
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  updatePortalSize(); // Recalculate portal size on resize
-  resetStars(); // Reset stars to fit new canvas size
+  updatePortalSize();
+  resetStars();
 }
 
 function updatePortalSize() {
-  // Set portalSize as a fraction of the smaller canvas dimension
-  portalSize = min(width, height) * 0.5; // 50% of smaller dimension
+  portalSize = min(width, height) * 0.5;
 }
 
 function resetStars() {
-  stars = []; // Clear existing stars
+  stars = [];
   for (let i = 0; i < numStars; i++) {
-    stars.push(new Star(random(width), random(height))); // Respawn stars
+    stars.push(new Star(random(width), random(height)));
   }
 }
 
@@ -144,10 +136,3 @@ function triggerPageTransition() {
   transitioning = true;
   console.log("Transition triggered!");
 }
-function setup() {
-    let canvas = createCanvas(windowWidth, windowHeight);
-    canvas.parent('canvas-container'); // Attach canvas to the container
-    strokeWeight(2);
-    updatePortalSize();
-    resetStars();
-  }
